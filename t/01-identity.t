@@ -1,12 +1,11 @@
 #!perl -w
 use strict;
-use Path::Class::Archive;
+use Archive::SevenZip;
 use File::Basename;
 use Test::More tests => 2;
 use File::Temp 'tempfile';
 
-my $version = Path::Class::Archive->find_7z_executable();
-#my $version = Path::Class::Archive->version();
+my $version = Archive::SevenZip->find_7z_executable();
 if( ! $version ) {
     BAIL_OUT "7z binary not found (not installed?)";
 };
@@ -14,7 +13,7 @@ diag "7-zip version $version";
 
 my $base = dirname($0) . '/data';
 my $archivename = "$base/def.zip";
-my $ar = Path::Class::Archive->new(
+my $ar = Archive::SevenZip->new(
     archivename => $archivename,
 );
 

@@ -1,11 +1,13 @@
 #!perl -w
 use strict;
-use Path::Class::Archive;
+use Archive::SevenZip;
 use File::Basename;
+use MP3::Tag;
 
 my $archivename = shift @ARGV;
-my $ar = Path::Class::Archive->new(
-    '7zip' => 'C:/Program Files/7-Zip/7z.exe',
+
+my $ar = Archive::SevenZip->new(
+    find => 1,
     archivename => $archivename,
 );
 
@@ -22,9 +24,21 @@ if( ! -d $target_dir ) {
 };
 
 for my $entry ( $ar->list ) {
-    #print $entry->fileName,"\n";
-    #print $entry->basename,"\n";
-    
     my $target = join "/", $target_dir, $entry->basename;
     $ar->extractMember( $entry->fileName, $target );
+    
+    # Rename
+    my $tag = MP3::Tag->new( $target );
+
+    # ($title, $track, $artist, $album, $comment, $year, $genre)
+    my @info = $tag->autoinfo;
+    my $real_name = sprintf "%s - %s - %02d - %s.mp3",
+        @info[2,3,1,0];
+    undef $tag; # to release the filehandle kept open...
+
+    $real_name =~ s![/\\]!;!g;
+    $real_name =~ s/[?:]//g;
+    my $mp3name = "$target_dir/$real_name";
+    rename $target => $mp3name
+        or die "Couldn't rename $target to $mp3name: $!"
 };
