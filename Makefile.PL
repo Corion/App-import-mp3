@@ -17,8 +17,11 @@ WriteMakefile(
       : ()),
     PL_FILES            => {},
     PREREQ_PM => {
+        'Filter::signatures' => 0,
         'Test::More' => 0,
         'MP3::Tag'   => 0,
+        'Music::Tag' => 0,
+        'Music::Tag::FLAC' => 0,
         'Path::Class' => 0,
         'Encode'     => 0,
         'File::Basename' => 0,
