@@ -32,6 +32,7 @@ sub sanitize( $pathname ) {
     $real_name =~ s![/\\]!;!g;
     $real_name =~ s/[?:|"]//g;
     $real_name =~ s/[*]/_/g;
+    $real_name =~ s/\s+/ /g;
     return $real_name
 };
 
