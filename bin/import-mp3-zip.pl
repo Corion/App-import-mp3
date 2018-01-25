@@ -47,6 +47,7 @@ sub import_file( $archivename ) {
     $name =~ /(.*?) - (.*?)\((\d+)\)/ or die "No music names found";
     my ($artist, $album) = ($1,$2);
     s/\s*$// for ($artist, $album);
+    $album =~ s!\s*\(Deluxe Edition\)$!!;
     
     print "$artist - $album\n";
 
