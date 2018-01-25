@@ -15,6 +15,7 @@ use feature 'signatures';
 GetOptions(
     'v|verbose' => \my $verbose,
     't|target-base' => \my $target_base,
+    'a|archive-target' => \my $archive_target,
 );
 
 # Reglob on Windows
@@ -105,7 +106,7 @@ sub import_file( $archivename ) {
     };
     
     undef $ar; # just in case we should hold open filehandles in $ar
-    my $target = file('d:/Music/', basename( $archivename ));
+    my $target = file($archive_target, basename( $archivename ));
     rename($archivename => $target)
         or warn "Couldn't rename $archivename to $target: $!";
 };
