@@ -12,13 +12,29 @@ use File::Glob 'bsd_glob';
 no warnings 'experimental';
 use feature 'signatures';
 
+=head1 NAME
+
+import-mp3-zip.pl - unpack and rename music files from archives
+
+=head1 SYNOPSIS
+
+  import-mp3-zip.pl ~/downloads/*.zip --target-base ~/music/ --archive-target ~/backup/
+
+This program unpacks music files from archives and puts them in directories
+named after the artist and album metadata extracted from the music files. The
+archive files are then moved to a storage directory.
+
+The 7zip program is needed for unpacking archives.
+
+=cut
+
 GetOptions(
     'v|verbose' => \my $verbose,
     't|target-base' => \my $target_base,
     'a|archive-target' => \my $archive_target,
 );
 
-our $version = '0.01';
+our $VERSION = '0.01';
 
 # Reglob on Windows
 if( ! @ARGV) {
@@ -50,7 +66,7 @@ sub import_file( $archivename ) {
     my ($artist, $album) = ($1,$2);
     s/\s*$// for ($artist, $album);
     $album =~ s!\s*\(Deluxe Edition\)$!!;
-    
+
     print "$artist - $album\n";
 
     my $subdir;
@@ -69,7 +85,7 @@ sub import_file( $archivename ) {
         my $target = join "/", "$target_dir", sanitize( $entry->basename );
         #local $ar->{verbose} = 1;
         $ar->extractMember( $entry->fileName, $target);
-        
+
         my $real_name;
         if( $target =~ /\.mp3$/i ) {
             my $tag = MP3::Tag->new( $target );
@@ -90,7 +106,7 @@ sub import_file( $archivename ) {
             if( $tag->track =~ m!(\d+)\s*/\s*\d+$! ) {
                 $tag->track( $1 );
             };
-            
+
             my %info = map { $_ => $tag->$_() } qw(artist album track title);
             $info{ artist } //= $artist;
             $info{ album  } //= $album;
@@ -104,14 +120,14 @@ sub import_file( $archivename ) {
                 or die "Couldn't rename $target to $mp3name: $!"
         };
     };
-    
+
     undef $ar; # just in case we should hold open filehandles in $ar
     my $target = file($archive_target, basename( $archivename ));
     rename($archivename => $target)
         or warn "Couldn't rename $archivename to $target: $!";
 };
 
-for my $url_or_file (@ARGV ) { 
+for my $url_or_file (@ARGV ) {
     my $file;
     if( $url_or_file =~/^file:/ ) {
         $file = URI::file->new( $url_or_file )->file;
