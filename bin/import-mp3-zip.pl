@@ -21,7 +21,7 @@ GetOptions(
 if( ! @ARGV) {
     my $dir = "$ENV{HOMEPATH}/Downloads";
     $dir =~ s!\\!/!g;
-    @ARGV = "$dir/*([0-9][0-9][0-9][0-9]).zip";
+    @ARGV = "$dir/*_([0-9][0-9][0-9][0-9]).zip";
 };
 @ARGV = map { -f $_ ? $_ : bsd_glob( $_ ) } @ARGV;
 
