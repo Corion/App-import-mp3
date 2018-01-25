@@ -18,6 +18,8 @@ GetOptions(
     'a|archive-target' => \my $archive_target,
 );
 
+our $version = '0.01';
+
 # Reglob on Windows
 if( ! @ARGV) {
     my $dir = "$ENV{HOMEPATH}/Downloads";
@@ -25,8 +27,6 @@ if( ! @ARGV) {
     @ARGV = "$dir/*_([0-9][0-9][0-9][0-9]).zip";
 };
 @ARGV = map { -f $_ ? $_ : bsd_glob( $_ ) } @ARGV;
-
-$target_base ||= "\\\\aliens\\media\\mp3";
 
 sub sanitize( $pathname ) {
     my $real_name = $pathname;
