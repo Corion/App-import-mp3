@@ -65,8 +65,9 @@ sub import_file( $archivename ) {
     };
 
     for my $entry ( $ar->list ) {
-        my $target = join "/", "$target_dir", $entry->basename;
-        $ar->extractMember( $entry->fileName, $target );
+        my $target = join "/", "$target_dir", sanitize( $entry->basename );
+        #local $ar->{verbose} = 1;
+        $ar->extractMember( $entry->fileName, $target);
         
         my $real_name;
         if( $target =~ /\.mp3$/i ) {
