@@ -98,8 +98,10 @@ sub import_file( $archivename ) {
         };
 
         my $mp3name = file( $target_dir, sanitize( $real_name ));
-        rename $target => $mp3name
-            or die "Couldn't rename $target to $mp3name: $!"
+        if( $mp3name ne $target ) {
+            rename $target => $mp3name
+                or die "Couldn't rename $target to $mp3name: $!"
+        };
     };
     
     undef $ar; # just in case we should hold open filehandles in $ar
