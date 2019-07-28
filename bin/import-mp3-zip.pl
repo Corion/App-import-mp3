@@ -1,5 +1,6 @@
-#!perl -w
+#!perl
 use strict;
+use warnings;
 use Archive::SevenZip;
 use File::Basename;
 use MP3::Tag;
