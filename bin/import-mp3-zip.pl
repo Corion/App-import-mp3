@@ -85,6 +85,10 @@ sub import_file( $archivename ) {
 
     for my $entry ( $ar->list ) {
         my $target = join "/", "$target_dir", sanitize( $entry->basename );
+
+        if( $^O =~ /mswin/i ) {
+            $target = encode('Latin-1', $target);
+        };
         #local $ar->{verbose} = 1;
         $ar->extractMember( $entry->fileName, $target);
 
