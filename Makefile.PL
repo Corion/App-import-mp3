@@ -52,6 +52,7 @@ my %module = (
         'Music::Tag' => 0,
         'Music::Tag::FLAC' => 0,
         'Path::Class' => 0,
+        'File::Copy'  => 0,
         'Encode'     => 0,
         'File::Basename' => 0,
         'Archive::SevenZip' => 0,
