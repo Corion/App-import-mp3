@@ -9,6 +9,7 @@ use URI::file;
 use Getopt::Long;
 use Path::Class;
 use File::Glob 'bsd_glob';
+use File::Copy 'move';
 
 no warnings 'experimental';
 use feature 'signatures';
@@ -124,7 +125,7 @@ sub import_file( $archivename ) {
 
     undef $ar; # just in case we should hold open filehandles in $ar
     my $target = file($archive_target, basename( $archivename ));
-    rename($archivename => $target)
+    move($archivename => $target)
         or warn "Couldn't rename $archivename to $target: $!";
 };
 
