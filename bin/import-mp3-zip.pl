@@ -33,8 +33,8 @@ The 7zip program is needed for unpacking archives.
 
 GetOptions(
     'v|verbose' => \my $verbose,
-    't|target-base' => \my $target_base,
-    'a|archive-target' => \my $archive_target,
+    't|target-base:s' => \my $target_base,
+    'a|archive-target:s' => \my $archive_target,
 );
 
 our $VERSION = '0.01';
