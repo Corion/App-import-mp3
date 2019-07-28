@@ -10,6 +10,7 @@ use Getopt::Long;
 use Path::Class;
 use File::Glob 'bsd_glob';
 use File::Copy 'move';
+use Encode 'encode';
 
 no warnings 'experimental';
 use feature 'signatures';
