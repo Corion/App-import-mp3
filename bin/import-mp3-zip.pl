@@ -39,6 +39,8 @@ GetOptions(
 
 our $VERSION = '0.01';
 
+$ENV{HOME} ||= $ENV{HOMEPATH}; # just to silence a warning inside MP3::Tag on Windows
+
 # Reglob on Windows
 if( ! @ARGV) {
     my $dir = "$ENV{HOMEPATH}/Downloads";
