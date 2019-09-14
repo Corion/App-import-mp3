@@ -11,6 +11,7 @@ use Path::Class;
 use File::Glob 'bsd_glob';
 use File::Copy 'move';
 use Encode 'encode';
+use File::HomeDir;
 
 no warnings 'experimental';
 use feature 'signatures';
@@ -43,9 +44,16 @@ $ENV{HOME} ||= $ENV{HOMEPATH}; # just to silence a warning inside MP3::Tag on Wi
 
 # Reglob on Windows
 if( ! @ARGV) {
-    my $dir = "$ENV{HOMEPATH}/Downloads";
-    $dir =~ s!\\!/!g;
-    @ARGV = "$dir/*_([0-9][0-9][0-9][0-9]).zip";
+    my $download_dir;
+    if( $^O =~ /mswin/i ) {
+        $download_dir = # File::HomeDir->my_download
+                        "$ENV{HOMEPATH}/Downloads";
+        $download_dir =~ s!\\!/!g;
+        @ARGV = "$download_dir/*_([0-9][0-9][0-9][0-9]).zip";
+    } else {
+        $download_dir = File::HomeDir::FreeDesktop->my_download;
+    };
+    @ARGV = "$download_dir/*_([0-9][0-9][0-9][0-9]).zip";
 };
 @ARGV = map { -f $_ ? $_ : bsd_glob( $_ ) } @ARGV;
 
