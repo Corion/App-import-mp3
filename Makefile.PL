@@ -55,6 +55,7 @@ my %module = (
         'File::Copy'  => 0,
         'Encode'     => 0,
         'File::Basename' => 0,
+        'File::HomeDir' => 0,
         'Archive::SevenZip' => 0,
     },
     dist                => { COMPRESS => 'gzip -9f', SUFFIX => 'gz', },
