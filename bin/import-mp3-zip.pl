@@ -10,7 +10,7 @@ use Getopt::Long;
 use Path::Class;
 use File::Glob 'bsd_glob';
 use File::Copy 'move';
-use Encode 'encode';
+use Encode 'encode', 'decode';
 use File::HomeDir;
 
 no warnings 'experimental';
@@ -59,6 +59,18 @@ if( ! @ARGV) {
 
 sub sanitize( $pathname ) {
     my $real_name = $pathname;
+    # Maybe we oughta use Text::Unidecode, but it does too much...
+    $real_name =~ s![\N{EM DASH}
+                     \N{EN DASH}
+                     \N{HORIZONTAL BAR}
+                     \N{FIGURE DASH}
+                     \N{HYPHEN}
+                     \N{NON-BREAKING HYPHEN}
+                     \N{TWO-EM DASH}
+                     \N{THREE-EM DASH}
+                     \N{SMALL EM DASH}
+                     ]
+                   !-!gx;
     $real_name =~ s![/\\]!;!g;
     $real_name =~ s/[!?:|"><]//g;
     $real_name =~ s/[*]/_/g;
@@ -79,11 +91,15 @@ sub import_file( $archivename ) {
     my ($artist, $album) = ($1,$2);
     s/\s*$// for ($artist, $album);
     $album =~ s!\s*\(Deluxe Edition\)$!!;
+    if( $^O ne 'MSWin32' ) {
+        $_ = decode('UTF-8', $_)
+            for ($artist,$album);
+    };
 
-    print "$artist - $album\n";
+    print sanitize( "$artist - $album\n" );
 
     my $subdir;
-    if( -d dir( $target_base, $artist ) ) {
+    if( -d dir( $target_base, sanitize( $artist ) )) {
         $subdir = dir( sanitize( $artist ), sanitize( "$artist - $album" ));
     } else {
         $subdir = sanitize( "$artist - $album" )
@@ -151,5 +167,8 @@ for my $url_or_file (@ARGV ) {
     } else {
         $file = $url_or_file;
     };
+
+    next unless -s $file;
+
     import_file( $file );
 }
