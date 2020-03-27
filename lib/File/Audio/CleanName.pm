@@ -26,10 +26,13 @@ sub sanitize( $pathname ) {
                      \N{SMALL EM DASH}
                      ]
                    !-!gx;
-    $real_name =~ s![/\\]!;!g;
-    $real_name =~ s/[!?:|"><]//g;
-    $real_name =~ s/[*]/_/g;
-    $real_name =~ s/\s+/ /g;
+    $real_name =~ s![/\\]!;!g;    # replace directory separators
+    $real_name =~ s![`’]+!'!g;     # normalize fancy quotes
+    $real_name =~ s![\N{LEFT SINGLE QUOTATION MARK}\N{RIGHT SINGLE QUOTATION MARK}]!'!g;     # normalize fancy quotes
+    $real_name =~ s/[!?:|"><]//g; # remove filesystem unsafe characters
+    $real_name =~ s/[*]/_/g;      # replace filesystem unsafe characters
+    $real_name =~ s/\s+/ /g;      # squash/normalize whitespace
+
     return $real_name
 };
 
@@ -61,7 +64,7 @@ sub build_name( $audiofile, $pattern='${artist} - ${album} - ${track} - ${title}
     $info{ artist } //= $artist;
     $info{ album  } //= $album;
     $info{ track  } = sprintf '%02d', $info{ track };
-    $real_name = $pattern =~ s!\$\{\s*(\w+)\s*\}!$info{$1} // $1!gr;
+    $real_name = ($pattern =~ s!\$\{\s*(\w+)\s*\}!$info{$1} // $1!gre);
 
     return $real_name
 };
