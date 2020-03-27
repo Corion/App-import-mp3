@@ -3,8 +3,7 @@ use strict;
 use warnings;
 use Archive::SevenZip;
 use File::Basename;
-use MP3::Tag;
-use Music::Tag 'traditional' => 1;
+#use MP3::Tag;
 use URI::file;
 use Getopt::Long;
 use Path::Class;
@@ -12,6 +11,7 @@ use File::Glob 'bsd_glob';
 use File::Copy 'move';
 use Encode 'encode', 'decode';
 use File::HomeDir;
+use File::Audio::CleanName 'sanitize', 'build_name';
 
 no warnings 'experimental';
 use feature 'signatures';
@@ -57,26 +57,6 @@ if( ! @ARGV) {
 };
 @ARGV = map { -f $_ ? $_ : bsd_glob( $_ ) } @ARGV;
 
-sub sanitize( $pathname ) {
-    my $real_name = $pathname;
-    # Maybe we oughta use Text::Unidecode, but it does too much...
-    $real_name =~ s![\N{EM DASH}
-                     \N{EN DASH}
-                     \N{HORIZONTAL BAR}
-                     \N{FIGURE DASH}
-                     \N{HYPHEN}
-                     \N{NON-BREAKING HYPHEN}
-                     \N{TWO-EM DASH}
-                     \N{THREE-EM DASH}
-                     \N{SMALL EM DASH}
-                     ]
-                   !-!gx;
-    $real_name =~ s![/\\]!;!g;
-    $real_name =~ s/[!?:|"><]//g;
-    $real_name =~ s/[*]/_/g;
-    $real_name =~ s/\s+/ /g;
-    return $real_name
-};
 
 sub import_file( $archivename ) {
     my $ar = Archive::SevenZip->new(
@@ -96,7 +76,7 @@ sub import_file( $archivename ) {
             for ($artist,$album);
     };
 
-    print sanitize( "$artist - $album\n" );
+    print sanitize( "$artist - $album" ) . "\n";
 
     my $subdir;
     if( -d dir( $target_base, sanitize( $artist ) )) {
@@ -119,34 +99,9 @@ sub import_file( $archivename ) {
         #local $ar->{verbose} = 1;
         $ar->extractMember( $entry->fileName, $target);
 
-        my $real_name;
-        if( $target =~ /\.mp3$/i ) {
-            my $tag = MP3::Tag->new( $target );
-
-            # ($title, $track, $artist, $album, $comment, $year, $genre)
-            my @info = $tag->autoinfo;
-            if( $info[1] =~ m!(\d+)\s*/\s*\d+$! ) {
-                $info[1] = $1;
-            };
-            $real_name = sprintf "%s - %s - %02d - %s.mp3",
-                @info[2,3,1,0];
-
-        } elsif( $target =~ /\.flac$/i ) {
-            # Maybe this can take over MP3 too?
-            my $tag = Music::Tag->new( $target);
-
-            $tag->get_tag;
-            if( $tag->track =~ m!(\d+)\s*/\s*\d+$! ) {
-                $tag->track( $1 );
-            };
-
-            my %info = map { $_ => $tag->$_() } qw(artist album track title);
-            $info{ artist } //= $artist;
-            $info{ album  } //= $album;
-            $real_name = sprintf "%s - %s - %02d - %s.flac",
-                $info{ artist }, $info{ album }, $info{ track }, $info{ title };
-        };
-
+        my $real_name = build_name( $target,
+                                    '${artist} - ${album} - ${track} - ${title}.${ext}',
+                                    $artist, $album );
         my $mp3name = file( $target_dir, sanitize( $real_name ));
         if( $mp3name ne $target ) {
             rename $target => $mp3name
