@@ -97,7 +97,7 @@ sub import_file( $archivename ) {
             $target = encode('Latin-1', $target);
         };
         #local $ar->{verbose} = 1;
-        $ar->extractMember( $entry->fileName, $target);
+        $ar->extractMember( decode('UTF-8',$entry->fileName), $target);
 
         my $real_name = build_name( $target,
                                     '${artist} - ${album} - ${track} - ${title}.${ext}',
