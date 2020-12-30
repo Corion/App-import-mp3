@@ -90,6 +90,7 @@ sub import_file( $archivename ) {
             or die "Couldn't create '$target_dir': $!";
     };
 
+    my @playlist;
     for my $entry ( $ar->list ) {
         my $target = join "/", "$target_dir", sanitize( $entry->basename );
 
@@ -102,17 +103,33 @@ sub import_file( $archivename ) {
         my $real_name = build_name( $target,
                                     '${artist} - ${album} - ${track} - ${title}.${ext}',
                                     $artist, $album );
+
+        # read information before copying to target, for speed
+        my $info = File::Audio::CleanName::audio_info($target);
+
         my $mp3name = file( $target_dir, sanitize( $real_name ));
+        $info->{url} = basename $mp3name;
+
         if( $mp3name ne $target ) {
             rename $target => $mp3name
                 or die "Couldn't rename $target to $mp3name: $!"
         };
+        push @playlist, $info;
     };
 
     undef $ar; # just in case we should hold open filehandles in $ar
     my $target = file($archive_target, basename( $archivename ));
     move($archivename => $target)
         or warn "Couldn't rename $archivename to $target: $!";
+
+    # Create m3u8 for the album from the tracks in @playlist
+    @playlist = sort {
+                          $a->{track} <=> $b->{track}
+                       || $a->{artist} cmp $b->{artist}
+                       || $a->{title}  cmp $b->{title}
+                     } @playlist;
+    my $playlist_file = file( $target_dir, sanitize( "$artist - $album" ) . ".m3u8" );
+    $playlist_file->spew( create_playlist( @playlist ));
 };
 
 for my $url_or_file (@ARGV ) {
@@ -127,3 +144,15 @@ for my $url_or_file (@ARGV ) {
 
     import_file( $file );
 }
+
+sub create_playlist( @urls ) {
+    my @lines=( '#EXTM3U' );
+    push @lines,
+        map {;
+            my $name = $_->{artist} ? "$_->{artist} - $_->{title}"
+                                    : $_->{title}
+                                    ;
+            my $duration = int( $_->{duration} / 1000 );
+            "#EXTINF:$duration,$name", $_->{url} } @urls;
+    my $res = join( "\n", @lines ) . "\n";
+};
