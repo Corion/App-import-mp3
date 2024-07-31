@@ -98,7 +98,15 @@ sub import_file( $archivename ) {
             $target = encode('Latin-1', $target);
         };
         #local $ar->{verbose} = 1;
+        print sprintf "Extracting %s\n", $entry->fileName;
         $ar->extractMember( decode('UTF-8',$entry->fileName), $target);
+
+        if( $target =~ /\.(jpg|jpeg|png)$/i ) {
+            my $albumartname = file( $target_dir, "cover.".lc $1);
+            rename $target => $albumartname
+                or die "Couldn't rename $target to $albumartname: $!";
+            next
+        };
 
         my $real_name = build_name( $target,
                                     '${artist} - ${album} - ${track} - ${title}.${ext}',
@@ -111,8 +119,8 @@ sub import_file( $archivename ) {
         $info->{url} = basename $mp3name;
 
         if( $mp3name ne $target ) {
-            rename $target => $mp3name
-                or die "Couldn't rename $target to $mp3name: $!"
+            rename $target => encode('UTF-8', $mp3name)
+                or warn "Couldn't rename '$target' to '$mp3name': $!"
         };
         push @playlist, $info;
     };
@@ -146,13 +154,26 @@ for my $url_or_file (@ARGV ) {
 }
 
 sub create_playlist( @urls ) {
-    my @lines=( '#EXTM3U' );
+    my @lines=( '#EXTM3U','#EXTENC: UTF-8' );
+
+    #if( my $cover = $directory->album_art ) {
+    #    push @lines, "#EXTIMG:" . basename( $cover->name );
+    #};
+
+    push @lines,
+        '#PLAYLIST ' . $urls[0]->{album};
+
     push @lines,
         map {;
-            my $name = $_->{artist} ? "$_->{artist} - $_->{title}"
-                                    : $_->{title}
-                                    ;
             my $duration = int( $_->{duration} / 1000 );
-            "#EXTINF:$duration,$name", $_->{url} } @urls;
-    my $res = join( "\n", @lines ) . "\n";
+            my $title = ($_->{title} =~ s!\s*,\s*! !r);
+            (
+                # Yes, a double comma, so $_->{title} can contain a comma, for SMPlayer
+                "#EXTINF:$duration,$title",
+                "#EXTALB:$_->{album}",
+                "#EXTART:$_->{artist}",
+                $_->{url},
+            )
+        } @urls;
+    return join "\n", @lines;
 };
