@@ -48,7 +48,7 @@ sub audio_info( $audiofile, $artist=undef, $album=undef ) {
     };
 
     my %info = map { $_ => $tag->$_() } qw(artist album track title duration);
-    $info{ duration } ||= '-1'; # "unknown" if we didn't find anything
+    $info{ duration } ||= '-1000'; # "unknown" if we didn't find anything
     $audiofile =~ /\.(\w+)$/;
     $info{ ext } = lc $1;
 
