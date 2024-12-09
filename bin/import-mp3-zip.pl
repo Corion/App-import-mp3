@@ -67,8 +67,14 @@ sub import_file( $archivename ) {
 
     my $name = basename $archivename;
     $name =~ s!_! !g;
-    $name =~ /(.*?) - (.*?) \((\d+)\)/ or die "No music names found in '$archivename'";
-    my ($artist, $album) = ($1,$2);
+    my ($artist, $album);
+    if( $name =~ /(.*?) - (.*?) \((\d+)\)/ ) {
+        ($artist, $album) = ($1, $2)
+    } elsif( $name =~ /(.*?) - (.*?)\.\w+$/ ) {
+        ($artist, $album) = ($1, $2)
+    } else {
+        die "No music names found in '$archivename'";
+    }
     s/\s*$// for ($artist, $album);
     $album =~ s!\s*\(Deluxe Edition\)$!!;
     if( $^O ne 'MSWin32' ) {
