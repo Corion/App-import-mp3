@@ -160,7 +160,11 @@ for my $url_or_file (@ARGV ) {
 }
 
 sub create_playlist( @urls ) {
-    my @lines=( '#EXTM3U','#EXTENC: UTF-8' );
+    # Also see https://github.com/HamzaBhf00/m3u-tags-iptv
+    my @lines=( '#EXTM3U',
+                '#EXTENC: UTF-8',
+                '#EXT-X-ALLOW-CACHE: 1',
+            );
 
     #if( my $cover = $directory->album_art ) {
     #    push @lines, "#EXTIMG:" . basename( $cover->name );
