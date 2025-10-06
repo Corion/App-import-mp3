@@ -49,6 +49,7 @@ my %module = (
     PREREQ_PM => {
         'Test::More' => 0,
         #'MP3::Tag'   => 0,
+        'Digest::SHA1' => 0, # weirdly enough, Music::Tag seems to need it but not list it?
         'Music::Tag' => 0,
         'Music::Tag::FLAC' => 0,
         'Music::Tag::MP3' => 0,
